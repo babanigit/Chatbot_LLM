@@ -49,7 +49,7 @@ class ChatbotService:
 
         # Add LLM summary
         summary = self.llm_service.generate_summary(
-            f"Products under {brand} brand: {str(results)}"
+            str(results)
         )
 
         return {"products": results, "summary": summary}
@@ -65,7 +65,7 @@ class ChatbotService:
 
         # Add LLM summary
         summary = self.llm_service.generate_summary(
-            f"Suppliers providing {category}: {str(results)}"
+            str(results)
         )
 
         return {"suppliers": results, "summary": summary}
@@ -86,7 +86,7 @@ class ChatbotService:
 
         # Add LLM summary
         summary = self.llm_service.generate_summary(
-            f"Product details: {str(product_details)}"
+            str(product_details)
         )
 
         return {
