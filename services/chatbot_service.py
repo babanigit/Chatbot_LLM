@@ -4,6 +4,7 @@ from models.supplier import Supplier
 from services.llm_service import LLMService
 import re
 
+
 class ChatbotService:
     def __init__(self, db: Session):
         self.db = db
@@ -48,9 +49,14 @@ class ChatbotService:
         results = [product.to_dict() for product in products]
 
         # Add LLM summary
-        summary = self.llm_service.generate_summary(
-            str(results)
-        )
+        if results:
+            summary_input = f"Found {len(results)} products under the brand '{brand}'. Details: {results}"
+        else:
+            summary_input = f"No products found under the brand '{brand}'."
+            summary = self.llm_service.generate_summary(summary_input)
+            return {"error": "Product not found", "summary": summary}
+
+        summary = self.llm_service.generate_summary(summary_input)
 
         return {"products": results, "summary": summary}
 
@@ -64,9 +70,14 @@ class ChatbotService:
         results = [supplier.to_dict() for supplier in suppliers]
 
         # Add LLM summary
-        summary = self.llm_service.generate_summary(
-            str(results)
-        )
+        if results:
+            summary_input = f"Found {len(results)} suppliers providing products in the category '{category}'. Details: {results}"
+        else:
+            summary_input = f"No suppliers found for the category '{category}'."
+            summary = self.llm_service.generate_summary(summary_input)
+            return {"error": "suppliers not found", "summary": summary}
+
+        summary = self.llm_service.generate_summary(summary_input)
 
         return {"suppliers": results, "summary": summary}
 
@@ -79,15 +90,16 @@ class ChatbotService:
         )
 
         if not product:
-            return {"error": "Product not found"}
+            summary_input = f"No product found with the name '{product_name}'."
+            summary = self.llm_service.generate_summary(summary_input)
+            return {"error": "Product not found", "summary": summary}
 
         product_details = product.to_dict()
-        supplier_details = product.supplier.to_dict()
+        supplier_details = product.supplier.to_dict() if product.supplier else None
 
         # Add LLM summary
-        summary = self.llm_service.generate_summary(
-            str(product_details)
-        )
+        summary_input = f"Details of product '{product_name}': {product_details}. Supplier details: {supplier_details}"
+        summary = self.llm_service.generate_summary(summary_input)
 
         return {
             "product": product_details,

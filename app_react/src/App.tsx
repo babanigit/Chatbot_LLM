@@ -1,18 +1,28 @@
 import { useState, FormEvent } from "react";
 import axios from "axios";
-import { Container, Row, Col, Form, Button, Card, Table, Alert } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Card,
+  Table,
+  Alert,
+} from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// Define the types for messages
-interface Message {
-  text: string;
-  sender: "user" | "bot";
-}
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "./redux/store";
+import { addMessage, setLoading } from "./redux/chatbotSlice";
 
 function App() {
-  const [query, setQuery] = useState<string>(""); 
-  const [messages, setMessages] = useState<Message[]>([]); 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { messages, loading } = useSelector(
+    (state: RootState) => state.chatbot
+  );
 
   const renderResponse = (data: any) => {
     // Render products
@@ -88,9 +98,14 @@ function App() {
     // Render error
     if (data.error) {
       return (
-        <Alert variant="danger">
-          {data.error}
-        </Alert>
+        <>
+          <Alert variant="danger">{data.error}</Alert>
+          {data.summary && (
+            <Alert variant="info">
+              <strong>Summary:</strong> {data.summary}
+            </Alert>
+          )}
+        </>
       );
     }
 
@@ -101,36 +116,50 @@ function App() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Add user message
-    const userMessage: Message = {
-      text: query,
-      sender: "user",
-    };
-    setMessages((prev) => [...prev, userMessage]);
+    // Trim the query to remove leading and trailing whitespace
+    const trimmedQuery = query.trim();
+
+    // Prevent blank queries
+    if (!trimmedQuery) {
+      dispatch(
+        addMessage({
+          text: "Query cannot be blank. Please type something.",
+          sender: "bot",
+        })
+      );
+      return;
+    }
+
+    // Add user message to the state
+    dispatch(
+      addMessage({
+        text: trimmedQuery,
+        sender: "user",
+      })
+    );
 
     try {
-      setLoading(true);
+      dispatch(setLoading(true));
+
       const response = await axios.post("http://127.0.0.1:5000/api/query", {
         query,
       });
 
-      // botmessage
-      const botMessage: Message = {
-        text: JSON.stringify(response.data, null, 2),
-        sender: "bot",
-      };
-      setMessages((prev) => [...prev, botMessage]);
-
+      dispatch(
+        addMessage({
+          text: JSON.stringify(response.data, null, 2),
+          sender: "bot",
+        })
+      );
     } catch (error: any) {
-      // errorMessage
-      const errorMessage: Message = {
-        text: `Error: ${error.message}`,
-        sender: "bot",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-      
+      dispatch(
+        addMessage({
+          text: `Error: ${error.message}`,
+          sender: "bot",
+        })
+      );
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
       setQuery("");
     }
   };
@@ -149,24 +178,29 @@ function App() {
                     msg.sender === "user" ? "bg-primary text-white" : "bg-light"
                   }`}
                 >
-                  {msg.sender === "bot" ? renderResponse(JSON.parse(msg.text)) : msg.text}
+                  {msg.sender === "bot"
+                    ? renderResponse(JSON.parse(msg.text))
+                    : msg.text}
                 </div>
               ))}
               {loading && <div>Loading...</div>}
             </Card.Body>
             <Card.Footer>
               <Form onSubmit={handleSubmit}>
-                <Form.Group>
+                <Form.Group className="d-flex align-items-center justify-content-between">
                   <Form.Control
                     type="text"
                     placeholder="Ask about products or suppliers"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    className="me-2" // Add margin between input and button
                   />
+                  {query && (
+                    <Button variant="primary" type="submit" className="mt-0">
+                      Send
+                    </Button>
+                  )}
                 </Form.Group>
-                <Button variant="primary" type="submit" className="mt-2">
-                  Send
-                </Button>
               </Form>
             </Card.Footer>
           </Card>

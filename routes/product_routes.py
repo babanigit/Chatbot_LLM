@@ -17,7 +17,8 @@ def process_query():
     try:
         # Get query from request
         data = request.get_json()
-        query = data.get("query", "")
+
+        query = data.get("query", "").strip()
 
         if not query:
             return jsonify({"error": "No query provided"}), 400
