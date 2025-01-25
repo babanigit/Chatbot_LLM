@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, FormEvent } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
