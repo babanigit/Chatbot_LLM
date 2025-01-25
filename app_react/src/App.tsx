@@ -1,17 +1,5 @@
 import { useState, FormEvent } from "react";
 import axios from "axios";
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Card,
-  Table,
-  Alert,
-} from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
-
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "./redux/store";
 import { addMessage, setLoading } from "./redux/chatbotSlice";
@@ -25,101 +13,98 @@ function App() {
   );
 
   const renderResponse = (data: any) => {
-    // Render products
     if (data.products) {
       return (
         <div>
-          <h6>Products Found:</h6>
-          <Table striped bordered hover size="sm">
+          <h6 className="text-lg font-semibold mb-2">Products Found:</h6>
+          <table className="table-auto w-full border border-gray-300">
             <thead>
-              <tr>
-                <th>Name</th>
-                <th>Brand</th>
-                <th>Price</th>
-                <th>Category</th>
-                <th>Description</th>
+              <tr className="bg-gray-100">
+                <th className="border px-2 py-1">Name</th>
+                <th className="border px-2 py-1">Brand</th>
+                <th className="border px-2 py-1">Price</th>
+                <th className="border px-2 py-1">Category</th>
+                <th className="border px-2 py-1">Description</th>
               </tr>
             </thead>
             <tbody>
               {data.products.map((product: any, index: number) => (
-                <tr key={index}>
-                  <td>{product.name}</td>
-                  <td>{product.brand}</td>
-                  <td>${product.price}</td>
-                  <td>{product.category}</td>
-                  <td>{product.description}</td>
+                <tr key={index} className="hover:bg-gray-100">
+                  <td className="border px-2 py-1">{product.name}</td>
+                  <td className="border px-2 py-1">{product.brand}</td>
+                  <td className="border px-2 py-1">${product.price}</td>
+                  <td className="border px-2 py-1">{product.category}</td>
+                  <td className="border px-2 py-1">{product.description}</td>
                 </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
           {data.summary && (
-            <Alert variant="info">
+            <div className="mt-2 bg-blue-100 text-blue-700 p-2 rounded">
               <strong>Summary:</strong> {data.summary}
-            </Alert>
+            </div>
           )}
         </div>
       );
     }
 
-    // Render suppliers
     if (data.suppliers) {
       return (
         <div>
-          <h6>Suppliers Found:</h6>
-          <Table striped bordered hover size="sm">
+          <h6 className="text-lg font-semibold mb-2">Suppliers Found:</h6>
+          <table className="table-auto w-full border border-gray-300">
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Contact Info</th>
-                <th>Product Categories</th>
+              <tr className="bg-gray-100">
+                <th className="border px-2 py-1">ID</th>
+                <th className="border px-2 py-1">Name</th>
+                <th className="border px-2 py-1">Contact Info</th>
+                <th className="border px-2 py-1">Product Categories</th>
               </tr>
             </thead>
             <tbody>
               {data.suppliers.map((supplier: any, index: number) => (
-                <tr key={index}>
-                  <td>{supplier.id}</td>
-                  <td>{supplier.name}</td>
-                  <td>{supplier.contact_info}</td>
-                  <td>{supplier.product_categories}</td>
+                <tr key={index} className="hover:bg-gray-100">
+                  <td className="border px-2 py-1">{supplier.id}</td>
+                  <td className="border px-2 py-1">{supplier.name}</td>
+                  <td className="border px-2 py-1">{supplier.contact_info}</td>
+                  <td className="border px-2 py-1">
+                    {supplier.product_categories}
+                  </td>
                 </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
           {data.summary && (
-            <Alert variant="info">
+            <div className="mt-2 bg-blue-100 text-blue-700 p-2 rounded">
               <strong>Summary:</strong> {data.summary}
-            </Alert>
+            </div>
           )}
         </div>
       );
     }
 
-    // Render error
     if (data.error) {
       return (
         <>
-          <Alert variant="danger">{data.error}</Alert>
+          <div className="bg-red-100 text-red-700 p-2 rounded mb-2">
+            {data.error}
+          </div>
           {data.summary && (
-            <Alert variant="info">
+            <div className="bg-blue-100 text-blue-700 p-2 rounded">
               <strong>Summary:</strong> {data.summary}
-            </Alert>
+            </div>
           )}
         </>
       );
     }
 
-    // Fallback to raw JSON for unexpected responses
     return <pre>{JSON.stringify(data, null, 2)}</pre>;
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Trim the query to remove leading and trailing whitespace
     const trimmedQuery = query.trim();
 
-    // Prevent blank queries
     if (!trimmedQuery) {
       dispatch(
         addMessage({
@@ -130,7 +115,6 @@ function App() {
       return;
     }
 
-    // Add user message to the state
     dispatch(
       addMessage({
         text: trimmedQuery,
@@ -165,48 +149,49 @@ function App() {
   };
 
   return (
-    <Container className="mt-5">
-      <Row className="justify-content-md-center">
-        <Col md={10}>
-          <Card>
-            <Card.Header>Supplier & Product Chatbot</Card.Header>
-            <Card.Body style={{ height: "500px", overflowY: "scroll" }}>
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`mb-2 p-2 rounded ${
-                    msg.sender === "user" ? "bg-primary text-white" : "bg-light"
-                  }`}
-                >
-                  {msg.sender === "bot"
-                    ? renderResponse(JSON.parse(msg.text))
-                    : msg.text}
-                </div>
-              ))}
-              {loading && <div>Loading...</div>}
-            </Card.Body>
-            <Card.Footer>
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="d-flex align-items-center justify-content-between">
-                  <Form.Control
-                    type="text"
-                    placeholder="Ask about products or suppliers"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="me-2" // Add margin between input and button
-                  />
-                  {query && (
-                    <Button variant="primary" type="submit" className="mt-0">
-                      Send
-                    </Button>
-                  )}
-                </Form.Group>
-              </Form>
-            </Card.Footer>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    <div className="container mx-auto mt-8 p-4">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
+        <div className="bg-blue-500 text-white text-lg font-bold p-4 rounded-t-lg">
+          Supplier & Product Chatbot
+        </div>
+        <div className="p-4 overflow-y-scroll" style={{ height: "400px" }}>
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`mb-2 p-2 rounded ${
+                msg.sender === "user"
+                  ? "bg-blue-500 text-white self-end"
+                  : "bg-gray-200 text-gray-900"
+              }`}
+            >
+              {msg.sender === "bot"
+                ? renderResponse(JSON.parse(msg.text))
+                : msg.text}
+            </div>
+          ))}
+          {loading && <div>Loading...</div>}
+        </div>
+        <form onSubmit={handleSubmit} className="p-4 border-t">
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              placeholder="Ask about products or suppliers"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1 border rounded px-3 py-2"
+            />
+            {query && (
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Send
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
