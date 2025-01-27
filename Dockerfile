@@ -24,7 +24,7 @@ ENV FLASK_ENV=development
 EXPOSE 5000
 
 # run this add sample data script
-# CMD ["sh", "-c", "python add_sample_data.py && python app.py"]
+CMD ["sh", "-c", "python add_sample_data.py && python app.py"]
 
 # Run the Flask application
-CMD ["python", "app.py"]
+# CMD ["python", "app.py"]
