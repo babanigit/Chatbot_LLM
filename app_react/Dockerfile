@@ -1,26 +1,17 @@
-# Dockerfile for a React app with a Node.js backend
-
-# Use the official Node.js image
-FROM node:18-alpine
-
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy package.json and package-lock.json
-COPY package.json .
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application code
-COPY . .
-
-# Build the React app for production
-RUN npm run build
-
-# Use nginx to serve the built React app
+# Use nginx to serve the built React Vite app
 FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
+
+# Set working directory
+WORKDIR /usr/share/nginx/html
+
+# Copy the pre-built 'dist' folder from the local machine to the container
+COPY dist/ . 
+
+# # Remove the default Nginx configuration file
+# RUN rm /etc/nginx/conf.d/default.conf
+
+# # Copy a custom Nginx configuration file
+# COPY nginx.conf /etc/nginx/conf.d/
 
 # Expose the port Nginx will run on
 EXPOSE 80
